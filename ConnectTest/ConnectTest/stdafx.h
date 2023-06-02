@@ -56,3 +56,4 @@
 #endif
 
 
+#define WM_UDP_RECVDATA WM_USER+100

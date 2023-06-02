@@ -28,6 +28,8 @@ public:
 // 实现
 protected:
 	DECLARE_MESSAGE_MAP()
+
+	//afx_msg void OnBnClickedButtonSetIP();
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(CAboutDlg::IDD)
@@ -40,6 +42,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
+	//ON_BN_CLICKED(IDC_BUTTON_SET_IP, &CAboutDlg::OnBnClickedButtonSetIP)
 END_MESSAGE_MAP()
 
 
@@ -65,7 +68,7 @@ BEGIN_MESSAGE_MAP(CConnectTestDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_NOTIFY(TCN_SELCHANGE, IDC_TAB1, &CConnectTestDlg::OnTcnSelchangeTab1)
-	ON_MESSAGE(WM_RECVDATA, OnRecvData)
+	//ON_MESSAGE(WM_RECVDATA, OnRecvData)
 END_MESSAGE_MAP()
 
 
@@ -139,16 +142,16 @@ BOOL CConnectTestDlg::OnInitDialog()
 												  tab_rectangle_.Height(),
 												  SWP_HIDEWINDOW);
 
-	// 创建并初始化套接字
-	InitSocket();
+	//// 创建并初始化套接字
+	//InitSocket();
 
-	RECVPARAM *pRecvParam = new RECVPARAM;
-	pRecvParam->sock = m_socket;
-	pRecvParam->hwnd = m_hWnd;
-	// 创建接收线程
-	HANDLE hThread = CreateThread(NULL, 0, RecvProc, (LPVOID)pRecvParam, 0, NULL);
-	// 关闭该接收程句柄，释放其引用计数
-	CloseHandle(hThread);
+	//RECVPARAM *pRecvParam = new RECVPARAM;
+	//pRecvParam->sock = m_socket;
+	//pRecvParam->hwnd = m_hWnd;
+	//// 创建接收线程
+	//HANDLE hThread = CreateThread(NULL, 0, RecvProc, (LPVOID)pRecvParam, 0, NULL);
+	//// 关闭该接收程句柄，释放其引用计数
+	//CloseHandle(hThread);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -225,33 +228,33 @@ void CConnectTestDlg::OnTcnSelchangeTab1(NMHDR *pNMHDR, LRESULT *pResult)
 		// 隐藏member_TCP_information_transfer_对话框
 	case 0:
 		member_UDP_information_transfer_.SetWindowPos(NULL, 
-			tab_rectangle_.left, 
-			tab_rectangle_.top, 
-			tab_rectangle_.Width(), 
-			tab_rectangle_.Height(),
-			SWP_SHOWWINDOW);
+													  tab_rectangle_.left, 
+													  tab_rectangle_.top, 
+													  tab_rectangle_.Width(), 
+													  tab_rectangle_.Height(),
+													  SWP_SHOWWINDOW);
 		member_TCP_information_transfer_.SetWindowPos(NULL, 
-			tab_rectangle_.left, 
-			tab_rectangle_.top, 
-			tab_rectangle_.Width(), 
-			tab_rectangle_.Height(),
-			SWP_HIDEWINDOW);
+													  tab_rectangle_.left, 
+													  tab_rectangle_.top, 
+													  tab_rectangle_.Width(), 
+													  tab_rectangle_.Height(),
+													  SWP_HIDEWINDOW);
 		break;
 		// 如果标签控件当前选择标签为“TCP”，则显示member_TCP_information_transfer_对话框
 		// 隐藏member_UDP_information_transfer_对话框
 	case 1:
 		member_UDP_information_transfer_.SetWindowPos(NULL, 
-			tab_rectangle_.left, 
-			tab_rectangle_.top, 
-			tab_rectangle_.Width(), 
-			tab_rectangle_.Height(),
-			SWP_HIDEWINDOW);
+													  tab_rectangle_.left, 
+													  tab_rectangle_.top, 
+													  tab_rectangle_.Width(), 
+													  tab_rectangle_.Height(),
+													  SWP_HIDEWINDOW);
 		member_TCP_information_transfer_.SetWindowPos(NULL, 
-			tab_rectangle_.left, 
-			tab_rectangle_.top, 
-			tab_rectangle_.Width(), 
-			tab_rectangle_.Height(),
-			SWP_SHOWWINDOW);
+													  tab_rectangle_.left, 
+													  tab_rectangle_.top, 
+													  tab_rectangle_.Width(), 
+													  tab_rectangle_.Height(),
+													  SWP_SHOWWINDOW);
 		break;
 	default:
 		break;
@@ -260,72 +263,90 @@ void CConnectTestDlg::OnTcnSelchangeTab1(NMHDR *pNMHDR, LRESULT *pResult)
 }
 
 
-
-BOOL CConnectTestDlg::InitSocket()
-{
-	// 创建套接字
-	m_socket = socket(AF_INET, SOCK_DGRAM, 0);
-	if(INVALID_SOCKET == m_socket)
-	{
-		MessageBox(_T("套接字创建失败！"));
-		return FALSE;
-	}
-	SOCKADDR_IN addrSock;
-	addrSock.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
-	addrSock.sin_family = AF_INET;
-	addrSock.sin_port = htons(9001);
-
-	// 绑定套接字
-	int retval;
-	retval = bind(m_socket, (SOCKADDR*)&addrSock, sizeof(SOCKADDR));
-	if(SOCKET_ERROR == retval)
-	{
-		closesocket(m_socket);
-		MessageBox(_T("绑定失败！"));
-		return FALSE;
-	}
-	return TRUE;
-}
-
-
-DWORD WINAPI CConnectTestDlg::RecvProc(LPVOID lpParameter)
-{
-	// 获得主线程传递的套接字和句柄
-	SOCKET sock = ((RECVPARAM*)lpParameter)->sock;
-	HWND hwnd = ((RECVPARAM*)lpParameter)->hwnd;
-	delete lpParameter;
-
-	SOCKADDR_IN addrFrom;
-	int len = sizeof(SOCKADDR);
-
-	char receive_buffer[200];
-
-	int retval;
-	while (TRUE)
-	{
-		// 接收数据
-		retval = recvfrom(sock, receive_buffer, 200, 0, (SOCKADDR*)&addrFrom, &len);
-		if (SOCKET_ERROR == retval)
-		{
-			break;
-		}
-		::PostMessage(hwnd, WM_RECVDATA, 0, (LPARAM)receive_buffer);
-	}
-	return 0;
-}
-
-LRESULT CConnectTestDlg::OnRecvData(WPARAM wPara, LPARAM lParam)
-{
-	CString str;
-	USES_CONVERSION;
-	str = A2T((char*)lParam);
-	CString strTemp;
-	// 获得已有数据
-	GetDlgItemText(IDC_UDP_RECEIVE_TEXT_EDIT, strTemp);
-	str += "\r\n";
-	str += strTemp;
-	// 显示所有接收到的数据
-	SetDlgItemText(IDC_UDP_RECEIVE_TEXT_EDIT, str);
-
-	return 0;
-}
+//
+//BOOL CConnectTestDlg::InitSocket()
+//{
+//	// WSAStartup初始化
+//	WORD wVersionRequested;
+//	WSADATA wsaData;
+//	int err;
+//
+//	wVersionRequested = MAKEWORD(1, 1);
+//
+//	err = WSAStartup(wVersionRequested, &wsaData);
+//	if (err != 0) {
+//		return FALSE;
+//	}
+//
+//	if (LOBYTE(wsaData.wVersion) != 1 ||
+//		HIBYTE(wsaData.wVersion) != 1) {
+//		WSACleanup();
+//		return FALSE;
+//	}
+//	// 创建套接字
+//	m_socket = socket(AF_INET, SOCK_DGRAM, 0);
+//	if(INVALID_SOCKET == m_socket)
+//	{
+//		MessageBox(_T("套接字创建失败！"));
+//		return FALSE;
+//	}
+//	SOCKADDR_IN addrSock;
+//	addrSock.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
+//	addrSock.sin_family = AF_INET;
+//	addrSock.sin_port = htons(9001);
+//
+//	// 绑定套接字
+//	int retval;
+//	retval = bind(m_socket, (SOCKADDR*)&addrSock, sizeof(SOCKADDR));
+//	if(SOCKET_ERROR == retval)
+//	{
+//		closesocket(m_socket);
+//		MessageBox(_T("绑定失败！"));
+//		return FALSE;
+//	}
+//	return TRUE;
+//}
+//
+//
+//DWORD WINAPI CConnectTestDlg::RecvProc(LPVOID lpParameter)
+//{
+//	// 获得主线程传递的套接字和句柄
+//	SOCKET sock = ((RECVPARAM*)lpParameter)->sock;
+//	HWND hwnd = ((RECVPARAM*)lpParameter)->hwnd;
+//	delete lpParameter;
+//
+//	SOCKADDR_IN addrFrom;
+//	int len = sizeof(SOCKADDR);
+//
+//	char receive_buffer[200];
+//
+//	int retval;
+//	while (TRUE)
+//	{
+//		// 接收数据
+//		retval = recvfrom(sock, receive_buffer, 200, 0, (SOCKADDR*)&addrFrom, &len);
+//		if (SOCKET_ERROR == retval)
+//		{
+//			break;
+//		}
+//		::PostMessage(hwnd, WM_RECVDATA, 0, (LPARAM)receive_buffer);
+//	}
+//	return 0;
+//}
+//
+//LRESULT CConnectTestDlg::OnRecvData(WPARAM wPara, LPARAM lParam)
+//{
+//	CString str;
+//	USES_CONVERSION;
+//	str = A2T((char*)lParam);
+//	CString strTemp;
+//	// 获得已有数据
+//	GetDlgItemText(IDC_UDP_RECEIVE_TEXT_EDIT, strTemp);
+//	str += "\r\n";
+//	str += strTemp;
+//	// 显示所有接收到的数据
+//	SetDlgItemText(IDC_UDP_RECEIVE_TEXT_EDIT, str);
+//
+//	return 0;
+//}
+//

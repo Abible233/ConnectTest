@@ -31,22 +31,22 @@ protected:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
-	afx_msg LRESULT OnRecvData(WPARAM wParam, LPARAM lParam);
+	//afx_msg LRESULT OnRecvData(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 public:
 	CTabCtrl member_tab_;
 	CUDPInfoTransfer member_UDP_information_transfer_;
 	CTCPInfoTransfer member_TCP_information_transfer_;
 	afx_msg void OnTcnSelchangeTab1(NMHDR *pNMHDR, LRESULT *pResult);
-	BOOL InitSocket();
+	/*BOOL InitSocket();
 	SOCKET m_socket;
-	static DWORD WINAPI RecvProc(LPVOID lpParameter);
+	static DWORD WINAPI RecvProc(LPVOID lpParameter);*/
 };
 
-struct RECVPARAM
-{
-	SOCKET sock;		// 已创建的套接字
-	HWND hwnd;			// 对话框句柄
-};
+//struct RECVPARAM
+//{
+//	SOCKET sock;		// 已创建的套接字
+//	HWND hwnd;			// 对话框句柄
+//};
 
-#define WM_RECVDATA WM_USER+1
+//#define WM_RECVDATA WM_USER+1
